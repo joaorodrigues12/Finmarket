@@ -29,6 +29,54 @@ Aplicativo mobile de notícias financeiras com análise de sentimento e insights
 
 ## 🔧 Instalação
 
+### Opção 1: DevContainer (Recomendado) 🐳
+
+A forma mais fácil de começar! Tudo configurado automaticamente.
+
+**Pré-requisitos:**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- [VS Code](https://code.visualstudio.com/)
+- [Dev Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+**Passos:**
+
+1. Clone o repositório:
+   ```bash
+   git clone <seu-repositorio>
+   cd Finmarket
+   ```
+
+2. Abra no VS Code:
+   ```bash
+   code .
+   ```
+
+3. Reabra no Container:
+   - Pressione `F1` ou `Ctrl+Shift+P`
+   - Digite: `Dev Containers: Reopen in Container`
+   - Aguarde a construção (primeira vez demora ~5 min)
+
+4. Configure as API Keys em `backend/.env`:
+   ```env
+   OPENAI_API_KEY=sua_chave_aqui
+   NEWS_API_KEY=sua_chave_aqui
+   ```
+
+5. Inicie os serviços:
+   ```bash
+   # Terminal 1 - Backend
+   cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   
+   # Terminal 2 - Frontend
+   npm start
+   ```
+
+📚 **Mais detalhes:** [.devcontainer/README.md](.devcontainer/README.md)
+
+---
+
+### Opção 2: Instalação Manual
+
 ### 1. Clone o repositório
 
 ```bash
