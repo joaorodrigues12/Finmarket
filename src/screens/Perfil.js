@@ -1,25 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { WebView } from "react-native-webview";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function Perfil() {
   const [favorites, setFavorites] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  // Carregar favoritos quando a tela ganhar foco
+  useFocusEffect(
+    React.useCallback(() => {
+      loadFavorites();
+    }, [])
+  );
 
   // Buscar favoritos salvos no AsyncStorage
-  useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        const saved = await AsyncStorage.getItem("favorites");
-        if (saved) {
-          setFavorites(JSON.parse(saved));
-        }
-      } catch (error) {
-        console.log("Erro ao carregar favoritos", error);
+  const loadFavorites = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("favorites");
+      if (saved) {
+        setFavorites(JSON.parse(saved));
       }
-    };
-    loadFavorites();
-  }, []);
+    } catch (error) {
+      console.log("Erro ao carregar favoritos", error);
+    }
+  };
+
+  // Remover favorito
+  const removeFavorite = async (symbol) => {
+    try {
+      const newFavorites = favorites.filter(fav => fav !== symbol);
+      setFavorites(newFavorites);
+      await AsyncStorage.setItem("favorites", JSON.stringify(newFavorites));
+    } catch (error) {
+      console.log("Erro ao remover favorito", error);
+    }
+  };
+
+  // Filtrar favoritos pela pesquisa
+  const filteredFavorites = favorites.filter(symbol => 
+    symbol.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>
@@ -36,6 +59,8 @@ export default function Perfil() {
           placeholder="Pesquisar nos favoritos..."
           placeholderTextColor="#999"
           style={styles.searchInput}
+          value={searchText}
+          onChangeText={setSearchText}
         />
       </View>
 
@@ -43,10 +68,17 @@ export default function Perfil() {
       <ScrollView style={styles.chartList}>
         {favorites.length === 0 ? (
           <Text style={styles.emptyText}>Nenhum favorito marcado ainda ⭐</Text>
+        ) : filteredFavorites.length === 0 ? (
+          <Text style={styles.emptyText}>Nenhum favorito encontrado</Text>
         ) : (
-          favorites.map((symbol, index) => (
+          filteredFavorites.map((symbol, index) => (
             <View key={index} style={styles.chartCard}>
-              <Text style={styles.assetName}>⭐ {symbol}</Text>
+              <View style={styles.cardHeader}>
+                <Text style={styles.assetName}>⭐ {symbol}</Text>
+                <TouchableOpacity onPress={() => removeFavorite(symbol)}>
+                  <FontAwesome name="star" size={22} color="#FFD700" />
+                </TouchableOpacity>
+              </View>
               <View style={{ height: 250 }}>
                 <WebView
                   source={{
@@ -110,7 +142,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     padding: 10,
   },
-  assetName: { color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 10 },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  assetName: { color: "#fff", fontSize: 16, fontWeight: "bold" },
   emptyText: {
     color: "#ccc",
     textAlign: "center",

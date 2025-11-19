@@ -6,7 +6,21 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "clear": "expo start --clear",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "backend": "cd backend && uvicorn app.main:app --reload",
+    "backend:prod": "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "dev": "concurrently \"npm run backend\" \"npm start\"",
+    "docker:dev": "docker-compose -f .devcontainer/docker-compose.yml up",
+    "docker:prod": "docker-compose -f docker-compose.prod.yml up -d",
+    "docker:down": "docker-compose -f docker-compose.prod.yml down",
+    "setup": "node -e \"console.log('Run: bash setup.sh (Mac/Linux) or setup.bat (Windows)')\"",
+    "clean": "rm -rf node_modules .expo dist && npm install"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

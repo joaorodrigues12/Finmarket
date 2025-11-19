@@ -1,79 +1,152 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
-  ActivityIndicator,
   RefreshControl 
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import ApiService from "../services/api";
+
+// Dados mockados de notícias
+const MOCK_NEWS = {
+  all: [
+    {
+      id: 1,
+      title: "Mercado em alta com expectativas positivas",
+      summary: "Análise gerada por IA indica tendência de alta para os próximos dias. Investidores otimistas com o cenário econômico.",
+      sentiment: "positive",
+      category: "market",
+      timestamp: new Date().toISOString(),
+      source: "AI Analysis",
+    },
+    {
+      id: 2,
+      title: "Tech stocks mostram volatilidade",
+      summary: "IA detecta padrões de volatilidade em ações de tecnologia. Mercado reage a mudanças no setor.",
+      sentiment: "neutral",
+      category: "tech",
+      timestamp: new Date(Date.now() - 60000).toISOString(),
+      source: "Market Watch",
+    },
+    {
+      id: 3,
+      title: "Reinforces Community Narrative of Consistent Earnings Quality",
+      summary: "A Tiptree reportou margens de lucro líquido de 2,4%, com crescimento de lucro de 24,4%, ligeiramente abaixo da média de cinco anos.",
+      sentiment: "neutral",
+      category: "market",
+      timestamp: new Date(Date.now() - 120000).toISOString(),
+      source: "Yahoo Entertainment",
+    },
+    {
+      id: 4,
+      title: "Madison Square Garden Entertainment",
+      summary: "Análise de desempenho da MSG Entertainment mostra crescimento consistente no setor de entretenimento.",
+      sentiment: "positive",
+      category: "market",
+      timestamp: new Date(Date.now() - 180000).toISOString(),
+      source: "Financial News",
+    },
+    {
+      id: 5,
+      title: "Criptomoedas apresentam recuperação",
+      summary: "Bitcoin e Ethereum mostram sinais de recuperação após período de baixa. Analistas preveem tendência positiva.",
+      sentiment: "positive",
+      category: "crypto",
+      timestamp: new Date(Date.now() - 240000).toISOString(),
+      source: "Crypto Insider",
+    },
+  ],
+  market: [
+    {
+      id: 1,
+      title: "Mercado em alta com expectativas positivas",
+      summary: "Análise gerada por IA indica tendência de alta para os próximos dias. Investidores otimistas com o cenário econômico.",
+      sentiment: "positive",
+      category: "market",
+      timestamp: new Date().toISOString(),
+      source: "AI Analysis",
+    },
+    {
+      id: 3,
+      title: "Reinforces Community Narrative of Consistent Earnings Quality",
+      summary: "A Tiptree reportou margens de lucro líquido de 2,4%, com crescimento de lucro de 24,4%, ligeiramente abaixo da média de cinco anos.",
+      sentiment: "neutral",
+      category: "market",
+      timestamp: new Date(Date.now() - 120000).toISOString(),
+      source: "Yahoo Entertainment",
+    },
+    {
+      id: 4,
+      title: "Madison Square Garden Entertainment",
+      summary: "Análise de desempenho da MSG Entertainment mostra crescimento consistente no setor de entretenimento.",
+      sentiment: "positive",
+      category: "market",
+      timestamp: new Date(Date.now() - 180000).toISOString(),
+      source: "Financial News",
+    },
+  ],
+  tech: [
+    {
+      id: 2,
+      title: "Tech stocks mostram volatilidade",
+      summary: "IA detecta padrões de volatilidade em ações de tecnologia. Mercado reage a mudanças no setor.",
+      sentiment: "neutral",
+      category: "tech",
+      timestamp: new Date(Date.now() - 60000).toISOString(),
+      source: "Market Watch",
+    },
+    {
+      id: 6,
+      title: "Apple anuncia novos produtos para 2025",
+      summary: "Gigante da tecnologia prepara lançamentos inovadores que devem impactar o mercado de dispositivos móveis.",
+      sentiment: "positive",
+      category: "tech",
+      timestamp: new Date(Date.now() - 300000).toISOString(),
+      source: "Tech News",
+    },
+  ],
+  crypto: [
+    {
+      id: 5,
+      title: "Criptomoedas apresentam recuperação",
+      summary: "Bitcoin e Ethereum mostram sinais de recuperação após período de baixa. Analistas preveem tendência positiva.",
+      sentiment: "positive",
+      category: "crypto",
+      timestamp: new Date(Date.now() - 240000).toISOString(),
+      source: "Crypto Insider",
+    },
+    {
+      id: 7,
+      title: "Nova regulação para criptomoedas",
+      summary: "Governo anuncia novas regras para o mercado de criptomoedas visando maior segurança para investidores.",
+      sentiment: "neutral",
+      category: "crypto",
+      timestamp: new Date(Date.now() - 360000).toISOString(),
+      source: "Crypto Regulation",
+    },
+  ],
+};
+
+const MOCK_INSIGHTS = {
+  summary: "As ações da AAPL, GOOGL e MSFT apresentaram um desempenho positivo no período de 1 dia.",
+  confidence: 0.80,
+};
 
 export default function Noticias() {
-  const [news, setNews] = useState([]);
-  const [insights, setInsights] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadNews();
-    loadInsights();
-  }, [selectedCategory]);
+  const news = MOCK_NEWS[selectedCategory] || MOCK_NEWS.all;
+  const insights = MOCK_INSIGHTS;
 
-  const loadNews = async () => {
-    try {
-      setLoading(true);
-      const filters = selectedCategory !== 'all' ? { category: selectedCategory } : {};
-      const data = await ApiService.getNews(filters);
-      setNews(data.news || []);
-    } catch (error) {
-      console.error('Erro ao carregar notícias:', error);
-      // Dados mock para desenvolvimento
-      setNews([
-        {
-          id: 1,
-          title: "Mercado em alta com expectativas positivas",
-          summary: "Análise gerada por IA indica tendência de alta para os próximos dias...",
-          sentiment: "positive",
-          category: "market",
-          timestamp: new Date().toISOString(),
-        },
-        {
-          id: 2,
-          title: "Tech stocks mostram volatilidade",
-          summary: "IA detecta padrões de volatilidade em ações de tecnologia...",
-          sentiment: "neutral",
-          category: "tech",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadInsights = async () => {
-    try {
-      const data = await ApiService.getMarketInsights(['AAPL', 'GOOGL', 'MSFT']);
-      setInsights(data);
-    } catch (error) {
-      console.error('Erro ao carregar insights:', error);
-      // Mock data
-      setInsights({
-        summary: "Mercado apresenta tendência positiva com base em análise de IA",
-        confidence: 0.85,
-      });
-    }
-  };
-
-  const onRefresh = async () => {
+  const onRefresh = () => {
     setRefreshing(true);
-    await loadNews();
-    await loadInsights();
-    setRefreshing(false);
+    // Simula um refresh
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
   };
 
   const getSentimentIcon = (sentiment) => {
@@ -101,72 +174,65 @@ export default function Noticias() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.logo}>
-          <Text style={styles.logoBlue}>Fin</Text>market
-        </Text>
-      </View>
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.logo}>
+            <Text style={styles.logoBlue}>Fin</Text>market
+          </Text>
+        </View>
 
-      {/* AI Insights Card */}
-      {insights && (
+        {/* AI Insights Card */}
         <View style={styles.insightsCard}>
           <View style={styles.insightsHeader}>
             <Ionicons name="bulb" size={20} color="#FFD700" />
             <Text style={styles.insightsTitle}>Insights do Mercado</Text>
           </View>
           <Text style={styles.insightsText}>{insights.summary}</Text>
-          {insights.confidence && (
-            <Text style={styles.confidenceText}>
-              Confiança: {(insights.confidence * 100).toFixed(0)}%
-            </Text>
-          )}
+          <Text style={styles.confidenceText}>
+            Confiança: {(insights.confidence * 100).toFixed(0)}%
+          </Text>
         </View>
-      )}
 
-      {/* Category Filters */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-      >
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[
-              styles.categoryChip,
-              selectedCategory === cat.id && styles.categoryChipActive
-            ]}
-            onPress={() => setSelectedCategory(cat.id)}
-          >
-            <Ionicons 
-              name={cat.icon} 
-              size={16} 
-              color={selectedCategory === cat.id ? '#fff' : '#1A73E8'} 
-            />
-            <Text style={[
-              styles.categoryText,
-              selectedCategory === cat.id && styles.categoryTextActive
-            ]}>
-              {cat.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* News List */}
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1A73E8" />
-          <Text style={styles.loadingText}>Gerando notícias com IA...</Text>
-        </View>
-      ) : (
+        {/* Category Filters */}
         <ScrollView 
-          style={styles.newsList}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesContainer}
+          contentContainerStyle={styles.categoriesContent}
         >
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.id}
+              style={[
+                styles.categoryChip,
+                selectedCategory === cat.id && styles.categoryChipActive
+              ]}
+              onPress={() => setSelectedCategory(cat.id)}
+            >
+              <Ionicons 
+                name={cat.icon} 
+                size={16} 
+                color={selectedCategory === cat.id ? '#fff' : '#1A73E8'} 
+              />
+              <Text style={[
+                styles.categoryText,
+                selectedCategory === cat.id && styles.categoryTextActive
+              ]}>
+                {cat.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* News List */}
+        <View style={styles.newsContainer}>
           {news.map((item) => (
             <TouchableOpacity key={item.id} style={styles.newsCard}>
               <View style={styles.newsHeader}>
@@ -203,8 +269,8 @@ export default function Noticias() {
               </View>
             </TouchableOpacity>
           ))}
-        </ScrollView>
-      )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -212,7 +278,10 @@ export default function Noticias() {
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: "#0A1033" 
+    backgroundColor: "#0A1033",
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
     width: "100%",
@@ -224,15 +293,16 @@ const styles = StyleSheet.create({
   logo: { 
     fontSize: 22, 
     fontWeight: "bold", 
-    color: "#000" 
+    color: "#000",
   },
   logoBlue: { 
-    color: "#1A73E8" 
+    color: "#1A73E8",
   },
-
   insightsCard: {
     backgroundColor: "#1A2B5F",
-    margin: 15,
+    marginHorizontal: 15,
+    marginTop: 15,
+    marginBottom: 10,
     padding: 15,
     borderRadius: 12,
     borderLeftWidth: 4,
@@ -261,21 +331,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   categoriesContainer: {
+    maxHeight: 50,
+    marginBottom: 5,
+  },
+  categoriesContent: {
     paddingHorizontal: 15,
-    paddingTop: 10,
-    paddingBottom: 0,
+    paddingVertical: 5,
   },
   categoryChip: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 20,
     marginRight: 10,
     borderWidth: 1,
     borderColor: "#1A73E8",
-    height: 40,
   },
   categoryChipActive: {
     backgroundColor: "#1A73E8",
@@ -290,28 +362,16 @@ const styles = StyleSheet.create({
   categoryTextActive: {
     color: "#fff",
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    color: "#fff",
-    marginTop: 10,
-    fontSize: 14,
-  },
-  newsList: { 
-    flex: 1, 
+  newsContainer: {
     paddingHorizontal: 15,
-    paddingTop: 0,
-    paddingBottom: 15,
+    paddingTop: 5,
+    paddingBottom: 20,
   },
   newsCard: {
     backgroundColor: "#132050",
     padding: 15,
     borderRadius: 12,
-    marginTop: 10,
-    marginBottom: 15,
+    marginBottom: 12,
     borderLeftWidth: 3,
     borderLeftColor: "#1A73E8",
   },
