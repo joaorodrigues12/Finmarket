@@ -1,15 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeGraphics() {
   const [favorites, setFavorites] = useState({});
   const [alerts, setAlerts] = useState({});
 
-  // Alternar favorito
-  const toggleFavorite = (symbol) => {
-    setFavorites((prev) => ({ ...prev, [symbol]: !prev[symbol] }));
+  // Carregar favoritos salvos ao iniciar
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+
+  // Carregar favoritos do AsyncStorage
+  const loadFavorites = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("favorites");
+      if (saved) {
+        const favArray = JSON.parse(saved);
+        const favObj = {};
+        favArray.forEach(symbol => {
+          favObj[symbol] = true;
+        });
+        setFavorites(favObj);
+      }
+    } catch (error) {
+      console.log("Erro ao carregar favoritos", error);
+    }
+  };
+
+  // Alternar favorito e salvar
+  const toggleFavorite = async (symbol) => {
+    try {
+      const newFavorites = { ...favorites, [symbol]: !favorites[symbol] };
+      setFavorites(newFavorites);
+      
+      // Converter objeto para array de símbolos favoritos
+      const favArray = Object.keys(newFavorites).filter(key => newFavorites[key]);
+      await AsyncStorage.setItem("favorites", JSON.stringify(favArray));
+    } catch (error) {
+      console.log("Erro ao salvar favorito", error);
+    }
   };
 
   // Alternar notificação
